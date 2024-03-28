@@ -1,0 +1,30 @@
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  tasks:
+          - name: Update package
+            ansible.builtin.yum:
+                    name: '*'
+                    state: latest
+          - name: Install NGINX,MYSQL,PHP
+            ansible.builtin.yum:
+                    name: "{{ item }}"
+                    state: latest
+            with_items:
+                    - nginx
+                    - mysql
+                    - php
+                    - php-mysqlnd
+          - name: Copy template phpinfo()
+            ansible.builtin.template:
+                    src: /etc/ansible/templates/phpinfo.php
+                    dest: /usr/share/nginx/html/index.php
+                    mode: '0744'
+          - name:  Started Nginx | php-frm
+            ansible.builtin.service:
+                    name: "{{ item }}"
+                    state: restarted
+                    enabled: yes
+            with_items:
+                    - nginx
+                    - php-fpm
